@@ -8,6 +8,8 @@
 import os
 import time
 import re
+import requests
+import json
 from slackclient import SlackClient
 
 import json #used for debug printing
@@ -62,13 +64,19 @@ def handle_command(command, channel):
     # This is where you start to implement more commands!
     if command.startswith(EXAMPLE_COMMAND):
         response = "Sure...write some more code then I can do that!"
+    if command.startswith("weather"):
+        key = "f0a499d708f41cd1535d2ba5e5447132"
+        location = command.split(" ")[1]
+        req = requests.get("http://api.openweathermap.org/data/2.5/weather?q=" + location + "&units=metric&appid=" + key)
+        jsonContent = json.loads(req.text)
+        response = "Hello sir the weather in " +  location + " is: " + str(jsonContent["main"]["temp"]) + ", " + jsonContent["weather"][0]["description"]
         
     #Bot will echo questions asked to it
     if command.endswith("?"):
         response = command
     # Sends the response back to the channel
     slack_client.api_call(
-        "chat.postMessage",
+        "chat.postMessage", 
         channel=channel,
         text=response or default_response
     )
